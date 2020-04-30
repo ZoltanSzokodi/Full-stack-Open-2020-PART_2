@@ -1,20 +1,25 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
+import axios from 'axios';
 import Contacts from './components/Contacts';
 import Form from './components/Form';
 import Find from './components/Find';
 
 const App = () => {
-  const [contacts, setContacts] = useState([
-    { name: 'Arto Hellas', number: '040-123456' },
-    { name: 'Ada Lovelace', number: '39-44-5323523' },
-    { name: 'Dan Abramov', number: '12-43-234345' },
-    { name: 'Mary Poppendieck', number: '39-23-6423122' },
-  ]);
+  const [contacts, setContacts] = useState([]);
   const [newContact, setNewContact] = useState({
     name: '',
     number: '',
   });
   const [find, setFind] = useState('');
+
+  const fetchData = async () => {
+    const res = await axios.get('http://localhost:3001/persons');
+    setContacts(res.data);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   // A single eventhandler with dynamic key props
   const handleChange = e => {
