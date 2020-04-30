@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import Part from './Part';
 
 const Content = ({ course: { parts } }) => {
   return (
-    <div>
+    <Fragment>
       {parts.map(part => (
         <Part key={part.id} part={part} />
       ))}
-    </div>
+    </Fragment>
   );
 };
 

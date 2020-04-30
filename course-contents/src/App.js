@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import Course from './components/Course';
 
 const App = () => {
@@ -48,11 +48,11 @@ const App = () => {
   ];
 
   return (
-    <div>
+    <Fragment>
       {courses.map(course => (
         <Course key={course.id} course={course} />
       ))}
-    </div>
+    </Fragment>
   );
 };
 
