@@ -18,19 +18,9 @@ const App = () => {
     number: '',
   });
 
-  useEffect(() => {
-    // Fetch initial data
-    getAll()
-      .then(initialData => setContacts(initialData))
-      .catch(err =>
-        setAlert({
-          type: 'fail',
-          message: err.message,
-        })
-      );
-
-    // Clear alert state after 3s
-    const resetAlert = setTimeout(
+  // Funtion to reset alert state after 3s
+  const resetAlert = () =>
+    setTimeout(
       () =>
         setAlert({
           type: '',
@@ -39,8 +29,18 @@ const App = () => {
       3000
     );
 
-    return () => clearTimeout(resetAlert);
-  }, [alert]);
+  useEffect(() => {
+    // Fetch initial data
+    getAll()
+      .then(initialData => setContacts(initialData))
+      .catch(err => {
+        setAlert({
+          type: 'fail',
+          message: err.message,
+        });
+        resetAlert();
+      });
+  }, []);
 
   // A single eventhandler with dynamic key props
   const handleChange = e => {
@@ -88,13 +88,15 @@ const App = () => {
               type: 'success',
               message: 'Contact updated',
             });
+            resetAlert();
           })
-          .catch(err =>
+          .catch(err => {
             setAlert({
               type: 'fail',
               message: err.message,
-            })
-          );
+            });
+            resetAlert();
+          });
         // Set and Reset states
         setNewContact({
           name: '',
@@ -112,13 +114,15 @@ const App = () => {
             type: 'success',
             message: 'Contact added',
           });
+          resetAlert();
         })
-        .catch(err =>
+        .catch(err => {
           setAlert({
             type: 'fail',
             message: err.message,
-          })
-        );
+          });
+          resetAlert();
+        });
 
       // Set and Reset states
       setNewContact({
@@ -139,13 +143,15 @@ const App = () => {
             type: 'success',
             message: 'Contact deleted',
           });
+          resetAlert();
         })
-        .catch(err =>
+        .catch(err => {
           setAlert({
             type: 'fail',
             message: err.message,
-          })
-        );
+          });
+          resetAlert();
+        });
   };
 
   return (
