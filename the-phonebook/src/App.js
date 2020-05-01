@@ -2,12 +2,17 @@ import React, { useState, useEffect, Fragment } from 'react';
 import Contacts from './components/Contacts';
 import Form from './components/Form';
 import Find from './components/Find';
+import Alert from './components/Alert';
 
 import { getAll, create, remove, update } from './services/contactServices';
 
 const App = () => {
   const [find, setFind] = useState('');
   const [contacts, setContacts] = useState([]);
+  const [alert, setAlert] = useState({
+    type: '',
+    message: '',
+  });
   const [newContact, setNewContact] = useState({
     name: '',
     number: '',
@@ -17,8 +22,25 @@ const App = () => {
     // Fetch initial data
     getAll()
       .then(initialData => setContacts(initialData))
-      .catch(err => alert(err.message));
-  }, []);
+      .catch(err =>
+        setAlert({
+          type: 'fail',
+          message: err.message,
+        })
+      );
+
+    // Clear alert state after 3s
+    const resetAlert = setTimeout(
+      () =>
+        setAlert({
+          type: '',
+          message: '',
+        }),
+      3000
+    );
+
+    return () => clearTimeout(resetAlert);
+  }, [alert]);
 
   // A single eventhandler with dynamic key props
   const handleChange = e => {
@@ -55,15 +77,24 @@ const App = () => {
 
         // Send a PUT request to the server
         update(contact.id, changedContact)
-          .then(updatedCont =>
+          .then(updatedCont => {
             // Update the state with the response
             setContacts(
               contacts.map(contact =>
                 contact.id === updatedCont.id ? updatedCont : contact
               )
-            )
-          )
-          .catch(err => alert(err.message));
+            );
+            setAlert({
+              type: 'success',
+              message: 'Contact updated',
+            });
+          })
+          .catch(err =>
+            setAlert({
+              type: 'fail',
+              message: err.message,
+            })
+          );
         // Set and Reset states
         setNewContact({
           name: '',
@@ -75,8 +106,19 @@ const App = () => {
     } else {
       // Post new contact to the server and add response obj to the state
       create(newContact)
-        .then(newCont => setContacts(contacts.concat(newCont)))
-        .catch(err => alert(err.message));
+        .then(newCont => {
+          setContacts(contacts.concat(newCont));
+          setAlert({
+            type: 'success',
+            message: 'Contact added',
+          });
+        })
+        .catch(err =>
+          setAlert({
+            type: 'fail',
+            message: err.message,
+          })
+        );
 
       // Set and Reset states
       setNewContact({
@@ -91,8 +133,19 @@ const App = () => {
 
     confirm &&
       remove(id)
-        .then(() => setContacts(contacts.filter(contact => contact.id !== id)))
-        .catch(err => alert(err.message));
+        .then(() => {
+          setContacts(contacts.filter(contact => contact.id !== id));
+          setAlert({
+            type: 'success',
+            message: 'Contact deleted',
+          });
+        })
+        .catch(err =>
+          setAlert({
+            type: 'fail',
+            message: err.message,
+          })
+        );
   };
 
   return (
@@ -105,6 +158,8 @@ const App = () => {
         handleChange={handleChange}
         newContact={newContact}
       />
+      <br />
+      <Alert alert={alert} />
       <Contacts contacts={contacts} find={find} handleDelete={handleDelete} />
     </Fragment>
   );
