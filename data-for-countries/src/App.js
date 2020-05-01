@@ -11,16 +11,45 @@ const App = () => {
   const [isSelected, setIsSelected] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState({});
   const [query, setQuery] = useState('');
+  const [currentWeather, setCurrentWeather] = useState({
+    temperature: '',
+    wind: '',
+    image: '',
+  });
 
-  // Helper function for data fetching
-  const fetchData = async () => {
-    const res = await axios.get('https://restcountries.eu/rest/v2/all');
-    setCountries(res.data);
+  // Helper function for fetching countries from API
+  const fetchCountries = async () => {
+    try {
+      const res = await axios.get('https://restcountries.eu/rest/v2/all');
+      setCountries(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // Helper function for fetching weather data from API
+  const fetchWeather = async city => {
+    try {
+      const res = await axios.get(
+        `http://api.weatherstack.com/current?access_key=${process.env.REACT_APP_API_KEY}&query=${city}`
+      );
+
+      const { temperature, wind_speed, weather_icons } = res.data.current;
+
+      setCurrentWeather({
+        ...currentWeather,
+        temperature,
+        wind: wind_speed,
+        image: weather_icons[0],
+      });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // Fetch data on first render
   useEffect(() => {
-    fetchData();
+    fetchCountries();
   }, []);
 
   // Handle filter when input value changes
@@ -38,6 +67,12 @@ const App = () => {
     // When the input value changes close the selected country and clear state
     setIsSelected(false);
     setSelectedCountry({});
+    setCurrentWeather(currentWeather => ({
+      ...currentWeather,
+      temperature: '',
+      wind: '',
+      image: '',
+    }));
   }, [query, countries]);
 
   // Handle input changes
@@ -65,10 +100,20 @@ const App = () => {
       )}
 
       {filteredCountries.length === 1 && (
-        <CountryInfo country={filteredCountries[0]} />
+        <CountryInfo
+          country={filteredCountries[0]}
+          fetchWeather={fetchWeather}
+          currentWeather={currentWeather}
+        />
       )}
 
-      {isSelected && <CountryInfo country={selectedCountry} />}
+      {isSelected && (
+        <CountryInfo
+          country={selectedCountry}
+          fetchWeather={fetchWeather}
+          currentWeather={currentWeather}
+        />
+      )}
     </div>
   );
 };
