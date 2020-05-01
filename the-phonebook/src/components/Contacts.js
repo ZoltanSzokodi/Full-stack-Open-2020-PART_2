@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import Contact from './Contact';
 
-const Contacts = ({ contacts, find }) => {
+const Contacts = ({ contacts, find, handleDelete }) => {
   return (
     <Fragment>
       <h2>Contacts</h2>
@@ -11,7 +11,11 @@ const Contacts = ({ contacts, find }) => {
             contact.name.toLowerCase().includes(find.toLowerCase())
           )
           .map(contact => (
-            <Contact key={contact.number} contact={contact} />
+            <Contact
+              key={contact.id}
+              contact={contact}
+              handleDelete={handleDelete}
+            />
           ))}
       </ul>
     </Fragment>
