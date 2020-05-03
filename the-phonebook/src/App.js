@@ -1,9 +1,12 @@
 import React, { useState, useEffect, Fragment } from 'react';
+
+// COMPONENTS ==========================================
 import Contacts from './components/Contacts';
 import Form from './components/Form';
 import Find from './components/Find';
 import Alert from './components/Alert';
 
+// API SERVICE =========================================
 import { getAll, create, remove, update } from './services/contactServices';
 
 const App = () => {
@@ -29,8 +32,8 @@ const App = () => {
       3000
     );
 
+  // FETCH INIT DATA ==========================================
   useEffect(() => {
-    // Fetch initial data
     getAll()
       .then(initialData => setContacts(initialData))
       .catch(err => {
@@ -42,6 +45,7 @@ const App = () => {
       });
   }, []);
 
+  // FORM DATA HANDLING =========================================
   // A single eventhandler with dynamic key props
   const handleChange = e => {
     setNewContact({
@@ -50,38 +54,35 @@ const App = () => {
     });
   };
 
+  // SEARCH CONTACTS ============================================
   const handleFind = e => setFind(e.target.value);
 
+  // ADD OR UPDATE CONTACT ======================================
   const handleSubmit = e => {
     e.preventDefault();
 
-    // Check if name already exists
-    const nameTaken = contacts.find(
-      contact => newContact.name === contact.name
+    // Check if name already exists in contacts
+    const contact = contacts.find(
+      cont => newContact.name.toLowerCase() === cont.name.toLowerCase()
     );
 
-    // If contact already exists ask user to confirm or decline update
-    if (nameTaken) {
+    // If a contact already exists with the name prompt the user for update confirmation
+    if (contact) {
       const confirm = window.confirm(
-        `Would you like to update ${newContact.name}'s number?`
+        `Would you like to update ${contact.name}'s number?`
       );
 
       if (confirm) {
-        // If confirmed search for the contact object in the state
-        const contact = contacts.find(
-          contact => newContact.name === contact.name
-        );
-
         // Change the contact number according to the input
-        const changedContact = { ...contact, number: newContact.number };
+        const updatedContact = { ...contact, number: newContact.number };
 
         // Send a PUT request to the server
-        update(contact.id, changedContact)
+        update(contact.id, updatedContact)
           .then(updatedCont => {
             // Update the state with the response
             setContacts(
-              contacts.map(contact =>
-                contact.id === updatedCont.id ? updatedCont : contact
+              contacts.map(cont =>
+                cont.id === updatedCont.id ? updatedCont : cont
               )
             );
             setAlert({
@@ -103,8 +104,6 @@ const App = () => {
           number: '',
         });
       }
-
-      // return alert(`${newContact.name} is already taken`);
     } else {
       // Post new contact to the server and add response obj to the state
       create(newContact)
@@ -132,10 +131,11 @@ const App = () => {
     }
   };
 
+  // DELETE A CONTACT =======================================
   const handleDelete = (id, name) => {
     const confirm = window.confirm(`Delete ${name}?`);
 
-    confirm &&
+    if (confirm) {
       remove(id)
         .then(() => {
           setContacts(contacts.filter(contact => contact.id !== id));
@@ -152,6 +152,7 @@ const App = () => {
           });
           resetAlert();
         });
+    }
   };
 
   return (
